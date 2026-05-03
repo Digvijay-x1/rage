@@ -316,7 +316,7 @@ RSpec.describe Rage::OpenAPI::Builder do
 
         let_class("UsersController", parent: mocked_classes.ApplicationController) do
           <<~'RUBY'
-            # @response [{ statuses: Array<IN_PROGRESS, COMPLETED> }]
+            # @response [{ id: Integer, full_name: String }]
             # @response 500 { error: INTERNAL_SERVER_ERROR, session_id: String }
             def index
             end
@@ -328,10 +328,7 @@ RSpec.describe Rage::OpenAPI::Builder do
         end
 
         it "returns correct schema" do
-          # expect(subject).to eq({ "openapi" => "3.0.0", "info" => { "version" => "1.0.0", "title" => "Rage" }, "components" => {}, "tags" => [{ "name" => "Users" }], "paths" => { "/users" => { "get" => { "summary" => "", "description" => "", "deprecated" => false, "security" => [], "tags" => ["Users"], "responses" => { "500" => { "description" => "", "content" => { "application/json" => { "schema" => { "type" => "object", "properties" => { "error" => { "type" => "string", "enum" => ["INTERNAL_SERVER_ERROR"] }, "session_id" => { "type" => "string" } }, "required" => ["error", "session_id"] } } } }, "200" => { "description" => "", "content" => { "application/json" => { "schema" => { "type" => "array", "items" => { "type" => "object", "properties" => { "id" => { "type" => "integer" }, "full_name" => { "type" => "string" } }, "required" => ["id", "full_name"] } } } } } } } } } })
-
-          puts subject.to_yaml
-          pp subject
+          expect(subject).to eq({ "openapi" => "3.0.0", "info" => { "version" => "1.0.0", "title" => "Rage" }, "components" => {}, "tags" => [{ "name" => "Users" }], "paths" => { "/users" => { "get" => { "summary" => "", "description" => "", "deprecated" => false, "security" => [], "tags" => ["Users"], "responses" => { "500" => { "description" => "", "content" => { "application/json" => { "schema" => { "type" => "object", "properties" => { "error" => { "type" => "string", "enum" => ["INTERNAL_SERVER_ERROR"] }, "session_id" => { "type" => "string" } }, "required" => ["error", "session_id"] } } } }, "200" => { "description" => "", "content" => { "application/json" => { "schema" => { "type" => "array", "items" => { "type" => "object", "properties" => { "id" => { "type" => "integer" }, "full_name" => { "type" => "string" } }, "required" => ["id", "full_name"] } } } } } } } } } })
         end
       end
     end
