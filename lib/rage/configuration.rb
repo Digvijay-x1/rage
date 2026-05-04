@@ -273,6 +273,14 @@ class Rage::Configuration
   end
   # @!endgroup
 
+  # @!group Router Configuration
+  # Allows configuring router settings.
+  # @return [Rage::Configuration::Router]
+  def router
+    @router ||= Router.new
+  end
+  # @!endgroup
+
   # @private
   def pubsub
     @pubsub ||= PubSub.new
@@ -694,33 +702,6 @@ class Rage::Configuration
         end
       end
     end
-
-    # @private
-    def config
-      @config ||= begin
-        config_file = Rage.root.join("config/cable.yml")
-
-        if config_file.exist?
-          yaml = ERB.new(config_file.read).result
-          YAML.safe_load(yaml, aliases: true, symbolize_names: true)[Rage.env.to_sym] || {}
-        else
-          {}
-        end
-      end
-    end
-
-    # @private
-    def adapter_config
-      config.except(:adapter)
-    end
-
-    # @private
-    def adapter
-      case config[:adapter]
-      when "redis"
-        Rage::Cable::Adapters::Redis.new(adapter_config)
-      end
-    end
   end
 
   class PublicFileServer
@@ -769,6 +750,39 @@ class Rage::Configuration
     # @private
     def initialize
       @configured = false
+      @schedule_blocks = []
+    end
+
+    # Stores the scheduling block for later execution
+    def schedule(&block)
+      @schedule_blocks << block
+    end
+
+    # Evaluates all stored schedule blocks and returns the collected tasks.
+    # Called at boot time after all app constants are loaded.
+    def scheduled_tasks
+      @schedule_blocks.flat_map do |block|
+        dsl = ScheduleDSL.new
+        dsl.instance_eval(&block)
+        dsl.tasks
+      end
+    end
+
+    # @private
+    class ScheduleDSL
+      attr_reader :tasks
+
+      def initialize
+        @tasks = []
+      end
+
+      # Registers a task to run on a fixed interval (in seconds)
+      def every(interval, task:)
+        unless task.is_a?(Class) && task.include?(Rage::Deferred::Task)
+          raise ArgumentError, "#{task} must be a class that includes Rage::Deferred::Task"
+        end
+        @tasks << { interval:, task: }
+      end
     end
 
     # Returns the backend instance used by `Rage::Deferred`.
@@ -1050,6 +1064,17 @@ class Rage::Configuration
     attr_accessor :key
   end
 
+  class Router
+    # @!attribute form_actions
+    #   Enable the automatic generation of `new` and `edit` routes via resource helpers.
+    #   @return [Boolean]
+    #   @example Enable form actions
+    #     Rage.configure do
+    #       config.router.form_actions = true
+    #     end
+    attr_accessor :form_actions
+  end
+
   # @private
   class PubSub
     attr_reader :adapter
@@ -1066,6 +1091,7 @@ class Rage::Configuration
     def config
       @config ||= begin
         config_file = Rage.root.join("config/pubsub.yml")
+        config_file = Rage.root.join("config/cable.yml") unless config_file.exist?
 
         config = if config_file.exist?
           yaml = ERB.new(config_file.read).result

@@ -114,13 +114,18 @@ module Rage::OpenAPI
   end
 
   # @private
+  def self.__schema_registry
+    __data_cache[:schema_registry] ||= {}
+  end
+
+  # @private
   def self.__reset_data_cache
     __data_cache.clear
   end
 
   # @private
   def self.__try_parse_collection(str)
-    if str =~ /^Array<([\w\s:\(\)]+)>$/ || str =~ /^\[([\w\s:\(\)]+)\]$/
+    if str =~ /^Array<([\w\s:\(\),]+)>$/ || str =~ /^\[([\w\s:\(\),]+)\]$/
       [true, $1]
     else
       [false, str]
