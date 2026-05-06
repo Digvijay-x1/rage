@@ -7,6 +7,7 @@
 - Add the `form_actions` router configuration (#278).
 - [Deferred] Add native periodic task scheduling with multi-process leader election via `File#flock` by [@Abishekcs](https://github.com/Abishekcs) (#233).
 - [OpenAPI] Support optional attributes and `Array<>` syntax by [@ayushman1210](https://github.com/ayushman1210) (#228).
+- [Errors] Add centralized error reporting interface via `Rage.errors` and `config.error_handlers` by [@Digvijay-x1](https://github.com/Digvijay-x1) (#275).
 
 ### Fixed
 
@@ -29,7 +30,6 @@
 - Fix `Rage::UploadedFile#close` (#262).
 
 ### Added
-- [Errors] Add centralized error reporting interface via `Rage.errors` and `config.error_handlers` by [@Digvijay-x1](https://github.com/Digvijay-x1).
 - [SSE] Add tests for log context propagation across fiber boundaries by [@jsxs0](https://github.com/jsxs0) (#267).
 - Add singular `resource` routing with plural controller mapping and document the helper by [@anuj-pal27](https://github.com/anuj-pal27) (#247).
 - [SSE] Add support for unbounded streams (#266).
